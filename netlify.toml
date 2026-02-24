@@ -1,7 +1,7 @@
 [build]
   publish = "public"
   functions = "netlify/functions"
-  command = "mkdir -p public && echo 'Deploying...' > public/index.html"
+  command = "mkdir -p public && cp -r static public/"
 
 [build.environment]
   PYTHON_VERSION = "3.12"
