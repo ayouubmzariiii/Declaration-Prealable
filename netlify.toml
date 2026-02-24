@@ -1,11 +1,10 @@
 [build]
-  command = "pip install -r requirements.txt"
+  publish = "public"
   functions = "netlify/functions"
-  publish = "static"
+  command = "mkdir -p public && echo 'Deploying...' > public/index.html"
 
-[functions]
-  external_node_modules = ["serverless-wsgi"]
-  node_bundler = "esbuild"
+[build.environment]
+  PYTHON_VERSION = "3.10"
 
 [[redirects]]
   from = "/*"
