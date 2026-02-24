@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Étape 3 — Photos{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% include "components/progress.html" %}
+
+    <form method="POST" enctype="multipart/form-data" class="wizard-form" id="photoForm">
+        <div class="form-header">
+            <h2>📷 Reportage photographique</h2>
+            <p class="form-description">
+                Ajoutez vos photos par paires : pour chaque emplacement (façade, pignon, etc.),
+                fournissez la photo <strong>avant</strong> et <strong>après</strong> travaux.
+                L'IA comparera chaque paire à l'étape suivante.
+            </p>
+        </div>
+
+        <div id="photo-sets-container">
+            <!-- Set 1 (default) -->
+            <div class="photo-set" data-set-index="0">
+                <div class="photo-set-header">
+                    <div class="set-label-row">
+                        <span class="set-number">Paire #1</span>
+                        <input type="text" name="set_label" class="set-label-input" placeholder="Ex : Façade principale"
+                            value="">
+                    </div>
+                    <button type="button" class="btn-remove" onclick="removeSet(this)"
+                        title="Supprimer cette paire">✕</button>
+                </div>
+                <div class="photo-pair-row">
+                    <div class="photo-pair-col">
+                        <div class="pair-label">📸 Avant travaux</div>
+                        <div class="photo-upload-card" onclick="this.querySelector('input[type=file]').click()">
+                            <input type="file" name="set_avant" accept="image/*" class="file-input"
+                                onchange="previewImg(this)">
+                            <div class="upload-placeholder">
+                                <span class="upload-icon">📷</span>
+                                <span>Cliquez pour sélectionner</span>
+                            </div>
+                            <img class="preview-img hidden" alt="Aperçu avant">
+                        </div>
+                    </div>
+                    <div class="photo-pair-col">
+                        <div class="pair-label">🏗️ Après travaux</div>
+                        <div class="photo-upload-card" onclick="this.querySelector('input[type=file]').click()">
+                            <input type="file" name="set_apres" accept="image/*" class="file-input"
+                                onchange="previewImg(this)">
+                            <div class="upload-placeholder">
+                                <span class="upload-icon">📷</span>
+                                <span>Cliquez pour sélectionner</span>
+                            </div>
+                            <img class="preview-img hidden" alt="Aperçu après">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing photo sets info -->
+        {% if dp.photo_sets %}
+        <div class="existing-photos">
+            <p class="existing-label">Paires actuellement enregistrées :</p>
+            {% for ps in dp.photo_sets %}
+            <span class="photo-badge">✓ {{ ps.label }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="set-add-row">
+            <button type="button" class="btn-add" onclick="addPhotoSet()">
+                + Ajouter une paire avant/après
+            </button>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('etape', num=2) }}" class="btn btn-secondary">← Précédent</a>
+            <button type="submit" class="btn btn-primary">Suivant — Analyse IA →</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let setCount = 1;
+
+    function addPhotoSet() {
+        setCount++;
+        const container = document.getElementById('photo-sets-container');
+        const html = `
+    <div class="photo-set" data-set-index="${setCount - 1}" style="animation: fadeSlideIn 0.3s ease">
+        <div class="photo-set-header">
+            <div class="set-label-row">
+                <span class="set-number">Paire #${setCount}</span>
+                <input type="text" name="set_label" class="set-label-input"
+                       placeholder="Ex : Pignon latéral" value="">
+            </div>
+            <button type="button" class="btn-remove" onclick="removeSet(this)" title="Supprimer">✕</button>
+        </div>
+        <div class="photo-pair-row">
+            <div class="photo-pair-col">
+                <div class="pair-label">📸 Avant travaux</div>
+                <div class="photo-upload-card" onclick="this.querySelector('input[type=file]').click()">
+                    <input type="file" name="set_avant" accept="image/*" class="file-input" onchange="previewImg(this)">
+                    <div class="upload-placeholder">
+                        <span class="upload-icon">📷</span>
+                        <span>Cliquez pour sélectionner</span>
+                    </div>
+                    <img class="preview-img hidden" alt="Aperçu avant">
+                </div>
+            </div>
+            <div class="photo-pair-col">
+                <div class="pair-label">🏗️ Après travaux</div>
+                <div class="photo-upload-card" onclick="this.querySelector('input[type=file]').click()">
+                    <input type="file" name="set_apres" accept="image/*" class="file-input" onchange="previewImg(this)">
+                    <div class="upload-placeholder">
+                        <span class="upload-icon">📷</span>
+                        <span>Cliquez pour sélectionner</span>
+                    </div>
+                    <img class="preview-img hidden" alt="Aperçu après">
+                </div>
+            </div>
+        </div>
+    </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function removeSet(btn) {
+        const sets = document.querySelectorAll('.photo-set');
+        if (sets.length <= 1) return; // Keep at least one
+        const setDiv = btn.closest('.photo-set');
+        setDiv.style.animation = 'fadeOut 0.2s ease forwards';
+        setTimeout(() => {
+            setDiv.remove();
+            renumberSets();
+        }, 200);
+    }
+
+    function renumberSets() {
+        const sets = document.querySelectorAll('.photo-set');
+        sets.forEach((set, i) => {
+            const num = set.querySelector('.set-number');
+            if (num) num.textContent = `Paire #${i + 1}`;
+        });
+        setCount = sets.length;
+    }
+
+    function previewImg(input) {
+        const card = input.closest('.photo-upload-card');
+        const placeholder = card.querySelector('.upload-placeholder');
+        const preview = card.querySelector('.preview-img');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

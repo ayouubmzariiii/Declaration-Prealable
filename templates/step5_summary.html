@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Étape 5 — Récapitulatif et export{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% include "components/progress.html" %}
+
+    <div class="wizard-form">
+        <div class="form-header">
+            <h2>📄 Récapitulatif du dossier</h2>
+            <p class="form-description">Vérifiez les informations avant de générer votre dossier PDF</p>
+        </div>
+
+        <!-- Demandeur -->
+        <div class="summary-section">
+            <h3 class="summary-title">👤 Demandeur</h3>
+            <div class="summary-grid">
+                <div class="summary-item"><span class="label">Identité</span><span class="value">{{
+                        dp.demandeur.civilite }} {{ dp.demandeur.prenom }} {{ dp.demandeur.nom }}</span></div>
+                <div class="summary-item"><span class="label">Adresse</span><span class="value">{{ dp.demandeur.adresse
+                        }}, {{ dp.demandeur.code_postal }} {{ dp.demandeur.ville }}</span></div>
+                <div class="summary-item"><span class="label">Contact</span><span class="value">{{
+                        dp.demandeur.telephone }} — {{ dp.demandeur.email }}</span></div>
+                <div class="summary-item"><span class="label">Qualité</span><span class="value">{{ dp.demandeur.qualite
+                        }}</span></div>
+            </div>
+        </div>
+
+        <!-- Terrain -->
+        <div class="summary-section">
+            <h3 class="summary-title">📍 Terrain</h3>
+            <div class="summary-grid">
+                <div class="summary-item"><span class="label">Adresse</span><span class="value">{{ dp.terrain.adresse
+                        }}, {{ dp.terrain.code_postal }} {{ dp.terrain.commune }}</span></div>
+                <div class="summary-item"><span class="label">Cadastre</span><span class="value">Section {{
+                        dp.terrain.section_cadastrale }}, Parcelle n°{{ dp.terrain.numero_parcelle }}</span></div>
+                <div class="summary-item"><span class="label">Superficie</span><span class="value">{{
+                        dp.terrain.superficie_terrain }} m²</span></div>
+                <div class="summary-item"><span class="label">Zone PLU</span><span class="value">{{ dp.terrain.zone_plu
+                        }}</span></div>
+            </div>
+        </div>
+
+        <!-- Travaux -->
+        <div class="summary-section">
+            <h3 class="summary-title">🔨 Travaux</h3>
+            <div class="summary-grid">
+                <div class="summary-item"><span class="label">Type</span><span class="value">{{ dp.travaux.type_travaux
+                        }}</span></div>
+                <div class="summary-item"><span class="label">Description</span><span class="value">{{
+                        dp.travaux.description_courte }}</span></div>
+                <div class="summary-item"><span class="label">Surfaces</span><span class="value">Existante : {{
+                        dp.travaux.surface_plancher_existante }} m² — Créée : {{ dp.travaux.surface_plancher_creee }}
+                        m²</span></div>
+                <div class="summary-item"><span class="label">Calendrier</span><span class="value">Début : {{
+                        dp.travaux.date_debut_prevue }} — Durée : {{ dp.travaux.duree_travaux_mois }} mois</span></div>
+            </div>
+        </div>
+
+        <!-- Notice -->
+        <div class="summary-section">
+            <h3 class="summary-title">📝 Notice descriptive</h3>
+            <div class="summary-text-block">
+                {% if dp.notice.etat_initial %}
+                <h4>État initial</h4>
+                <p>{{ dp.notice.etat_initial }}</p>
+                {% endif %}
+                {% if dp.notice.etat_projete %}
+                <h4>État projeté</h4>
+                <p>{{ dp.notice.etat_projete }}</p>
+                {% endif %}
+                {% if dp.notice.justification %}
+                <h4>Justification</h4>
+                <p>{{ dp.notice.justification }}</p>
+                {% endif %}
+                {% if not dp.notice.etat_initial and not dp.notice.etat_projete %}
+                <p style="color: var(--text-muted); font-style: italic;">Aucune notice générée — retournez à l'étape IA
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Photos (paired) -->
+        <div class="summary-section">
+            <h3 class="summary-title">📷 Photos ({{ dp.photo_sets|length }} paire{% if dp.photo_sets|length > 1 %}s{%
+                endif %})</h3>
+            <div class="summary-grid">
+                {% for ps in dp.photo_sets %}
+                <div class="summary-item">
+                    <span class="label">{{ ps.label }}</span>
+                    <span class="value">Avant{% if ps.chemin_avant %} ✓{% else %} —{% endif %} / Après{% if
+                        ps.chemin_apres %} ✓{% else %} —{% endif %}</span>
+                </div>
+                {% endfor %}
+                {% if not dp.photo_sets %}
+                <div class="summary-item"><span class="label">—</span><span class="value">Aucune photo</span></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pièces jointes -->
+        <div class="summary-section">
+            <h3 class="summary-title">📋 Pièces jointes</h3>
+            <div class="pieces-list">
+                {% for ref, info in dp.pieces_jointes.items() %}
+                <div class="piece-item {% if info.fourni %}piece-fourni{% else %}piece-manquant{% endif %}">
+                    <span class="piece-ref">{{ ref }}</span>
+                    <span class="piece-nom">{{ info.nom }}</span>
+                    <span class="piece-statut">{% if info.fourni %}✓{% else %}—{% endif %}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- PDF Export -->
+        <div class="export-section">
+            <div class="export-card">
+                <div class="export-icon">📥</div>
+                <h3>Générer le dossier PDF</h3>
+                <p>Choisissez le thème visuel pour votre document officiel :</p>
+
+                <div class="theme-selector">
+                    <label class="theme-option">
+                        <input type="radio" name="pdf_theme" value="classique" checked onchange="updateDownloadLink()">
+                        <div class="theme-card">
+                            <div class="theme-colors">
+                                <span class="tc" style="background:#000091"></span>
+                                <span class="tc" style="background:#e1000f"></span>
+                            </div>
+                            <span class="theme-name">Classique (Officiel)</span>
+                        </div>
+                    </label>
+
+                    <label class="theme-option">
+                        <input type="radio" name="pdf_theme" value="moderne" onchange="updateDownloadLink()">
+                        <div class="theme-card">
+                            <div class="theme-colors">
+                                <span class="tc" style="background:#222831"></span>
+                                <span class="tc" style="background:#00ADB5"></span>
+                            </div>
+                            <span class="theme-name">Moderne</span>
+                        </div>
+                    </label>
+
+                    <label class="theme-option">
+                        <input type="radio" name="pdf_theme" value="nature" onchange="updateDownloadLink()">
+                        <div class="theme-card">
+                            <div class="theme-colors">
+                                <span class="tc" style="background:#2D6A4F"></span>
+                                <span class="tc" style="background:#D8F3DC"></span>
+                            </div>
+                            <span class="theme-name">Nature</span>
+                        </div>
+                    </label>
+
+                    <label class="theme-option">
+                        <input type="radio" name="pdf_theme" value="architecte" onchange="updateDownloadLink()">
+                        <div class="theme-card">
+                            <div class="theme-colors">
+                                <span class="tc" style="background:#14213d"></span>
+                                <span class="tc" style="background:#fca311"></span>
+                            </div>
+                            <span class="theme-name">Architecte</span>
+                        </div>
+                    </label>
+                </div>
+
+                <a href="{{ url_for('telecharger_pdf') }}?theme=classique" class="btn btn-primary btn-lg"
+                    id="download-btn" onclick="showDownloading(this)">
+                    Télécharger le PDF →
+                </a>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('etape', num=4) }}" class="btn btn-secondary">← Modifier les descriptions</a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Terminer</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateDownloadLink() {
+        const themeRadios = document.getElementsByName('pdf_theme');
+        let selectedTheme = 'classique';
+        for (const radio of themeRadios) {
+            if (radio.checked) {
+                selectedTheme = radio.value;
+                break;
+            }
+        }
+        const dlBtn = document.getElementById('download-btn');
+        dlBtn.href = "{{ url_for('telecharger_pdf') }}?theme=" + selectedTheme;
+    }
+
+    function showDownloading(btn) {
+        const originalText = btn.textContent;
+        btn.textContent = '⏳ Génération en cours...';
+        btn.style.opacity = '0.7';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.opacity = '1';
+        }, 5000);
+    }
+</script>
+{% endblock %}

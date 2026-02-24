@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Étape 1 — Identité et localisation{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% include "components/progress.html" %}
+
+    <form method="POST" class="wizard-form">
+        <div class="form-header">
+            <h2>👤 Identité du demandeur</h2>
+            <p class="form-description">Renseignez vos coordonnées et l'adresse du terrain concerné</p>
+        </div>
+
+        <!-- Demandeur -->
+        <div class="form-section">
+            <h3 class="form-section-title">Informations personnelles</h3>
+            <div class="form-grid">
+                <div class="form-group form-group-small">
+                    <label for="civilite">Civilité</label>
+                    <select name="civilite" id="civilite">
+                        <option value="M." {% if dp.demandeur.civilite=='M.' %}selected{% endif %}>M.</option>
+                        <option value="Mme" {% if dp.demandeur.civilite=='Mme' %}selected{% endif %}>Mme</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" name="nom" id="nom" value="{{ dp.demandeur.nom }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" name="prenom" id="prenom" value="{{ dp.demandeur.prenom }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="date_naissance">Date de naissance</label>
+                    <input type="text" name="date_naissance" id="date_naissance"
+                        value="{{ dp.demandeur.date_naissance }}" placeholder="JJ/MM/AAAA">
+                </div>
+                <div class="form-group">
+                    <label for="lieu_naissance">Lieu de naissance</label>
+                    <input type="text" name="lieu_naissance" id="lieu_naissance"
+                        value="{{ dp.demandeur.lieu_naissance }}">
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="adresse_demandeur">Adresse du demandeur</label>
+                    <input type="text" name="adresse_demandeur" id="adresse_demandeur"
+                        value="{{ dp.demandeur.adresse }}" required>
+                </div>
+                <div class="form-group form-group-small">
+                    <label for="cp_demandeur">Code postal</label>
+                    <input type="text" name="cp_demandeur" id="cp_demandeur" value="{{ dp.demandeur.code_postal }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="ville_demandeur">Ville</label>
+                    <input type="text" name="ville_demandeur" id="ville_demandeur" value="{{ dp.demandeur.ville }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="telephone">Téléphone</label>
+                    <input type="tel" name="telephone" id="telephone" value="{{ dp.demandeur.telephone }}">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" value="{{ dp.demandeur.email }}">
+                </div>
+                <div class="form-group">
+                    <label for="qualite">Qualité</label>
+                    <select name="qualite" id="qualite">
+                        <option value="Propriétaire" {% if dp.demandeur.qualite=='Propriétaire' %}selected{% endif %}>
+                            Propriétaire</option>
+                        <option value="Mandataire" {% if dp.demandeur.qualite=='Mandataire' %}selected{% endif %}>
+                            Mandataire</option>
+                        <option value="Co-indivisaire" {% if dp.demandeur.qualite=='Co-indivisaire' %}selected{% endif
+                            %}>Co-indivisaire</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terrain -->
+        <div class="form-section">
+            <h3 class="form-section-title">📍 Localisation du terrain</h3>
+            <div class="form-grid">
+                <div class="form-group form-group-full">
+                    <label for="adresse_terrain">Adresse du terrain</label>
+                    <input type="text" name="adresse_terrain" id="adresse_terrain" value="{{ dp.terrain.adresse }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="lieu_dit">Lieu-dit <span class="optional">(facultatif)</span></label>
+                    <input type="text" name="lieu_dit" id="lieu_dit" value="{{ dp.terrain.lieu_dit }}">
+                </div>
+                <div class="form-group form-group-small">
+                    <label for="cp_terrain">Code postal</label>
+                    <input type="text" name="cp_terrain" id="cp_terrain" value="{{ dp.terrain.code_postal }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="commune">Commune</label>
+                    <input type="text" name="commune" id="commune" value="{{ dp.terrain.commune }}" required>
+                </div>
+                <div class="form-group form-group-small">
+                    <label for="section_cadastrale">Section cadastrale</label>
+                    <input type="text" name="section_cadastrale" id="section_cadastrale"
+                        value="{{ dp.terrain.section_cadastrale }}">
+                </div>
+                <div class="form-group">
+                    <label for="numero_parcelle">N° de parcelle</label>
+                    <input type="text" name="numero_parcelle" id="numero_parcelle"
+                        value="{{ dp.terrain.numero_parcelle }}">
+                </div>
+                <div class="form-group">
+                    <label for="superficie_terrain">Superficie (m²)</label>
+                    <input type="number" name="superficie_terrain" id="superficie_terrain"
+                        value="{{ dp.terrain.superficie_terrain }}" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="zone_plu">Zone PLU</label>
+                    <input type="text" name="zone_plu" id="zone_plu" value="{{ dp.terrain.zone_plu }}">
+                </div>
+                <div class="form-group form-group-full">
+                    <label class="form-section-label">Situations particulières</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="est_lotissement" {% if dp.terrain.est_lotissement %}checked{%
+                                endif %}>
+                            <span>Terrain situé dans un lotissement</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="est_zone_protegee" {% if dp.terrain.est_zone_protegee
+                                %}checked{% endif %}>
+                            <span>Zone protégée (site classé, AVAP, etc.)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="est_monument_historique" {% if
+                                dp.terrain.est_monument_historique %}checked{% endif %}>
+                            <span>Périmètre d'un monument historique</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Retour</a>
+            <button type="submit" class="btn btn-primary">Suivant →</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

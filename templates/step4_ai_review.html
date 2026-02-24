@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+{% block title %}Étape 4 — Analyse IA et revue{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% include "components/progress.html" %}
+
+    <form method="POST" class="wizard-form" id="reviewForm">
+        <div class="form-header">
+            <h2>🤖 Analyse IA et revue des descriptions</h2>
+            <p class="form-description">
+                Lancez l'analyse IA pour générer automatiquement la notice descriptive
+                et les informations sur les matériaux à partir de vos photos.
+                Vous pourrez ensuite modifier les textes avant validation.
+            </p>
+        </div>
+
+        <!-- AI Launch -->
+        <div class="ai-launch-section">
+            <div class="ai-launch-card" id="ai-launch-card">
+                <div class="ai-launch-icon">🤖</div>
+                <h3>Lancer l'analyse par intelligence artificielle</h3>
+                <p>L'IA va analyser vos {{ dp.photo_sets|length }} paire(s) de photos et générer la notice
+                    descriptive,
+                    les matériaux détectés et les couleurs identifiées.</p>
+
+                <div class="form-group" style="margin: 1.5rem auto; max-width: 350px;">
+                    <label for="ai_model"
+                        style="text-align: left; display: block; margin-bottom: 0.5rem; font-weight: 500;">Modèle
+                        d'IA
+                        :</label>
+                    <select id="ai_model" class="form-input" style="width: 100%; border-color: var(--teal-secondary);">
+                        {% for key, label in models.items() %}
+                        <option value="{{ key }}" {% if key==default_model %}selected{% endif %}>{{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-lg" id="btn-launch-ai" onclick="lancerAnalyse()">
+                    🚀 Lancer l'analyse IA
+                </button>
+            </div>
+
+            <div id="ai-progress" class="ai-progress hidden">
+                <div class="ai-progress-spinner">
+                    <div class="spinner-large"></div>
+                </div>
+                <div class="ai-progress-text">
+                    <h3>Analyse en cours...</h3>
+                    <p id="ai-status-text">Envoi des photos au modèle d'IA...</p>
+                </div>
+            </div>
+
+            <div id="ai-done" class="ai-done hidden">
+                <div class="ai-done-icon">✅</div>
+                <p>Analyse terminée ! Vérifiez et modifiez les descriptions ci-dessous.</p>
+            </div>
+
+            <div id="ai-error" class="ai-error hidden">
+                <div class="ai-error-icon">⚠️</div>
+                <p id="ai-error-text"></p>
+                <button type="button" class="btn btn-secondary" onclick="lancerAnalyse()">Réessayer</button>
+            </div>
+        </div>
+
+        <!-- Notice descriptive -->
+        <div class="form-section" id="notice-section">
+            <h3 class="form-section-title">📝 Notice descriptive & Analyse technique</h3>
+
+            <div class="form-grid">
+                <div class="form-group form-group-full">
+                    <label for="etat_initial">État initial du terrain et de la construction</label>
+                    <textarea name="etat_initial" id="etat_initial" rows="3">{{ dp.notice.etat_initial }}</textarea>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="etat_projete">Description du projet (état projeté)</label>
+                    <textarea name="etat_projete" id="etat_projete" rows="3">{{ dp.notice.etat_projete }}</textarea>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="modifications_detaillees">Modifications détaillées détectées (esthétiques, géométriques,
+                        structurelles)</label>
+                    <textarea name="modifications_detaillees" id="modifications_detaillees"
+                        rows="4">{{ dp.notice.modifications_detaillees }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="hauteur_estimee_existante">Hauteur estimée (existante)</label>
+                    <input type="text" name="hauteur_estimee_existante" id="hauteur_estimee_existante"
+                        value="{{ dp.notice.hauteur_estimee_existante }}">
+                </div>
+                <div class="form-group">
+                    <label for="hauteur_estimee_projete">Hauteur estimée (projetée)</label>
+                    <input type="text" name="hauteur_estimee_projete" id="hauteur_estimee_projete"
+                        value="{{ dp.notice.hauteur_estimee_projete }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="modification_volume">Modification du volume</label>
+                    <input type="text" name="modification_volume" id="modification_volume"
+                        value="{{ dp.notice.modification_volume }}">
+                </div>
+                <div class="form-group">
+                    <label for="modification_emprise_au_sol">Modification de l'emprise au sol</label>
+                    <input type="text" name="modification_emprise_au_sol" id="modification_emprise_au_sol"
+                        value="{{ dp.notice.modification_emprise_au_sol }}">
+                </div>
+                <div class="form-group">
+                    <label for="modification_surface_plancher">Modification de la surface de plancher</label>
+                    <input type="text" name="modification_surface_plancher" id="modification_surface_plancher"
+                        value="{{ dp.notice.modification_surface_plancher }}">
+                </div>
+                <div class="form-group">
+                    <label for="niveau_confiance_global">Niveau de confiance global de l'analyse</label>
+                    <input type="text" name="niveau_confiance_global" id="niveau_confiance_global"
+                        value="{{ dp.notice.niveau_confiance_global }}">
+                </div>
+
+                <div class="form-group form-group-full">
+                    <label for="coherence_architecturale">Cohérence architecturale (PLU/Zone)</label>
+                    <textarea name="coherence_architecturale" id="coherence_architecturale"
+                        rows="3">{{ dp.notice.coherence_architecturale }}</textarea>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="risques_reglementaires_potentiels">Risques réglementaires potentiels détectés</label>
+                    <textarea name="risques_reglementaires_potentiels" id="risques_reglementaires_potentiels"
+                        rows="3">{{ dp.notice.risques_reglementaires_potentiels }}</textarea>
+                </div>
+
+                <div class="form-group form-group-full">
+                    <label for="justification">Justification du projet</label>
+                    <textarea name="justification" id="justification" rows="3">{{ dp.notice.justification }}</textarea>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="insertion_paysagere">Insertion paysagère</label>
+                    <textarea name="insertion_paysagere" id="insertion_paysagere"
+                        rows="3">{{ dp.notice.insertion_paysagere }}</textarea>
+                </div>
+                <div class="form-group form-group-full">
+                    <label for="impact_environnemental">Impact environnemental</label>
+                    <textarea name="impact_environnemental" id="impact_environnemental"
+                        rows="3">{{ dp.notice.impact_environnemental }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aspect extérieur -->
+        <div class="form-section" id="aspect-section">
+            <h3 class="form-section-title">🎨 Aspect extérieur détecté</h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nombre_ouvertures_existantes">Nombre d'ouvertures (existantes)</label>
+                    <input type="text" name="nombre_ouvertures_existantes" id="nombre_ouvertures_existantes"
+                        value="{{ dp.aspect_exterieur.nombre_ouvertures_existantes }}">
+                </div>
+                <div class="form-group">
+                    <label for="nombre_ouvertures_projetees">Nombre d'ouvertures (projetées)</label>
+                    <input type="text" name="nombre_ouvertures_projetees" id="nombre_ouvertures_projetees"
+                        value="{{ dp.aspect_exterieur.nombre_ouvertures_projetees }}">
+                </div>
+                <div class="form-group">
+                    <label for="facade_materiaux_existants">Façade — Matériaux existants</label>
+                    <input type="text" name="facade_materiaux_existants" id="facade_materiaux_existants"
+                        value="{{ dp.aspect_exterieur.facade_materiaux_existants }}">
+                </div>
+                <div class="form-group">
+                    <label for="facade_materiaux_projetes">Façade — Matériaux projetés</label>
+                    <input type="text" name="facade_materiaux_projetes" id="facade_materiaux_projetes"
+                        value="{{ dp.aspect_exterieur.facade_materiaux_projetes }}">
+                </div>
+                <div class="form-group">
+                    <label for="menuiseries_existantes">Menuiseries existantes</label>
+                    <input type="text" name="menuiseries_existantes" id="menuiseries_existantes"
+                        value="{{ dp.aspect_exterieur.menuiseries_existantes }}">
+                </div>
+                <div class="form-group">
+                    <label for="menuiseries_projetees">Menuiseries projetées</label>
+                    <input type="text" name="menuiseries_projetees" id="menuiseries_projetees"
+                        value="{{ dp.aspect_exterieur.menuiseries_projetees }}">
+                </div>
+                <div class="form-group">
+                    <label for="toiture_materiaux_existants">Toiture — Matériaux existants</label>
+                    <input type="text" name="toiture_materiaux_existants" id="toiture_materiaux_existants"
+                        value="{{ dp.aspect_exterieur.toiture_materiaux_existants }}">
+                </div>
+                <div class="form-group">
+                    <label for="toiture_materiaux_projetes">Toiture — Matériaux projetés</label>
+                    <input type="text" name="toiture_materiaux_projetes" id="toiture_materiaux_projetes"
+                        value="{{ dp.aspect_exterieur.toiture_materiaux_projetes }}">
+                </div>
+                <div class="form-group">
+                    <label for="couleur_facade">Couleur façade</label>
+                    <input type="text" name="couleur_facade" id="couleur_facade"
+                        value="{{ dp.aspect_exterieur.couleur_facade }}">
+                </div>
+                <div class="form-group">
+                    <label for="couleur_menuiseries">Couleur menuiseries</label>
+                    <input type="text" name="couleur_menuiseries" id="couleur_menuiseries"
+                        value="{{ dp.aspect_exterieur.couleur_menuiseries }}">
+                </div>
+                <div class="form-group">
+                    <label for="couleur_volets">Couleur volets</label>
+                    <input type="text" name="couleur_volets" id="couleur_volets"
+                        value="{{ dp.aspect_exterieur.couleur_volets }}">
+                </div>
+                <div class="form-group">
+                    <label for="couleur_toiture">Couleur toiture</label>
+                    <input type="text" name="couleur_toiture" id="couleur_toiture"
+                        value="{{ dp.aspect_exterieur.couleur_toiture }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('etape', num=3) }}" class="btn btn-secondary">← Précédent</a>
+            <button type="submit" class="btn btn-primary">Valider et continuer →</button>
+        </div>
+    </form>
+
+    <!-- Testing Sidebar -->
+    <div class="testing-sidebar"
+        style="position: fixed; top: 100px; right: 2rem; width: 320px; z-index: 50; max-height: calc(100vh - 120px); overflow-y: auto;">
+        <div class="wizard-form"
+            style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow);">
+            <div class="form-header"
+                style="margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border);">
+                <h2 style="font-size: 1.1rem; margin-bottom: 0.2rem;">🛠️ Outils de test IA</h2>
+                <p class="form-description" style="font-size: 0.8rem;">Personnalisez le prompt et les paramètres
+                    (avancé)</p>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Modèle</label>
+                <select id="testModel" style="width: 100%; border-color: var(--teal-secondary);">
+                    {% for key, label in models.items() %}
+                    <option value="{{ key }}" {% if key==default_model %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Température (<span id="tempVal">0.3</span>)</label>
+                <input type="range" id="testTemp" min="0" max="1" step="0.1" value="0.3"
+                    oninput="document.getElementById('tempVal').innerText = this.value;">
+                <small style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">0 =
+                    Strict et factuel<br>1 = Créatif et imprévisible</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Max Tokens</label>
+                <input type="number" id="testTokens" value="4096" style="width: 100%;">
+                <small
+                    style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">Longueur
+                    max de la réponse produite par l'IA</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Prompt système & utilisateur</label>
+                <textarea id="testPrompt" rows="12"
+                    style="width: 100%; font-family: monospace; font-size: 0.75rem; resize: vertical;">{{ default_prompt }}</textarea>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <button type="button" class="btn btn-primary" onclick="lancerAnalyse()"
+                    style="width: 100%; justify-content: center;">Relancer l'analyse</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.reload()"
+                    style="width: 100%; justify-content: center; border-color: var(--error); color: var(--error);">Réinitialiser
+                    la page</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function lancerAnalyse() {
+        const launchCard = document.getElementById('ai-launch-card');
+        const progress = document.getElementById('ai-progress');
+        const done = document.getElementById('ai-done');
+        const errorDiv = document.getElementById('ai-error');
+        const statusText = document.getElementById('ai-status-text');
+
+        let selectedModel;
+        if (document.getElementById('testModel')) {
+            selectedModel = document.getElementById('testModel').value;
+        } else {
+            selectedModel = document.getElementById('ai_model').value;
+        }
+
+        const customPrompt = document.getElementById('testPrompt').value;
+        const customTemp = parseFloat(document.getElementById('testTemp').value);
+        const customTokens = parseInt(document.getElementById('testTokens').value);
+
+        launchCard.classList.add('hidden');
+        errorDiv.classList.add('hidden');
+        done.classList.add('hidden');
+        progress.classList.remove('hidden');
+
+        const steps = [
+            'Envoi des photos au modèle d\'IA...',
+            'Analyse des matériaux et couleurs...',
+            'Génération de la notice descriptive...',
+            'Rédaction des justifications...',
+        ];
+        let stepIdx = 0;
+        const interval = setInterval(() => {
+            stepIdx = Math.min(stepIdx + 1, steps.length - 1);
+            statusText.textContent = steps[stepIdx];
+        }, 5000);
+
+        try {
+            const res = await fetch('/api/analyser-photos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: selectedModel,
+                    custom_prompt: customPrompt,
+                    temperature: customTemp,
+                    max_tokens: customTokens
+                })
+            });
+            clearInterval(interval);
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Erreur serveur (${res.status})`);
+            }
+
+            const data = await res.json();
+            console.log('=== AI API Response ===', JSON.stringify(data, null, 2));
+
+            if (!data.success) {
+                throw new Error(data.error || 'Erreur inconnue');
+            }
+
+            let fieldsPopulated = 0;
+
+            // ── Fill notice descriptive fields (textareas) ──
+            const noticeFields = [
+                'etat_initial', 'etat_projete', 'justification', 'insertion_paysagere',
+                'impact_environnemental', 'modifications_detaillees', 'modification_volume',
+                'modification_emprise_au_sol', 'modification_surface_plancher',
+                'hauteur_estimee_existante', 'hauteur_estimee_projete',
+                'coherence_architecturale', 'risques_reglementaires_potentiels', 'niveau_confiance_global'
+            ];
+            if (data.notice) {
+                noticeFields.forEach(fieldName => {
+                    const value = data.notice[fieldName];
+                    const el = document.getElementById(fieldName);
+                    if (el && value !== undefined && value !== null && value !== '') {
+                        el.value = value;
+                        fieldsPopulated++;
+                        console.log(`  ✓ notice.${fieldName} = "${value.substring(0, 50)}..."`);
+                    } else {
+                        console.log(`  ✗ notice.${fieldName} — empty or element not found`);
+                    }
+                });
+            } else {
+                console.warn('No "notice" key in API response');
+            }
+
+            // ── Fill aspect extérieur fields (inputs) ──
+            const aspectFields = [
+                'facade_materiaux_existants', 'facade_materiaux_projetes',
+                'menuiseries_existantes', 'menuiseries_projetees',
+                'toiture_materiaux_existants', 'toiture_materiaux_projetes',
+                'couleur_facade', 'couleur_menuiseries', 'couleur_volets', 'couleur_toiture',
+                'nombre_ouvertures_existantes', 'nombre_ouvertures_projetees'
+            ];
+            if (data.aspect) {
+                aspectFields.forEach(fieldName => {
+                    const value = data.aspect[fieldName];
+                    const el = document.getElementById(fieldName);
+                    if (el && value !== undefined && value !== null && value !== '') {
+                        el.value = value;
+                        fieldsPopulated++;
+                        console.log(`  ✓ aspect.${fieldName} = "${value}"`);
+                    } else {
+                        console.log(`  ✗ aspect.${fieldName} — empty or element not found`);
+                    }
+                });
+            } else {
+                console.warn('No "aspect" key in API response');
+            }
+
+            progress.classList.add('hidden');
+
+            if (fieldsPopulated > 0) {
+                done.classList.remove('hidden');
+                // Highlight updated fields with green border flash
+                document.querySelectorAll('#notice-section textarea, #aspect-section input').forEach(el => {
+                    if (el.value && el.value.trim()) {
+                        el.classList.add('ai-updated');
+                        setTimeout(() => el.classList.remove('ai-updated'), 3000);
+                    }
+                });
+                console.log(`=== ${fieldsPopulated} field(s) populated ===`);
+            } else {
+                // AI returned success but no data — show warning
+                errorDiv.classList.remove('hidden');
+                document.getElementById('ai-error-text').textContent =
+                    'L\'IA a répondu mais n\'a pas retourné de données exploitables. Vérifiez que vous avez bien uploadé des photos à l\'étape précédente.';
+                console.warn('AI returned success but 0 fields were populated. Full response:', data);
+            }
+
+        } catch (e) {
+            clearInterval(interval);
+            progress.classList.add('hidden');
+            errorDiv.classList.remove('hidden');
+            document.getElementById('ai-error-text').textContent = 'Erreur : ' + e.message;
+            console.error('AI analysis error:', e);
+        }
+    }
+</script>
+{% endblock %}

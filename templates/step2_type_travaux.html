@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Étape 2 — Type de travaux{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    {% include "components/progress.html" %}
+
+    <form method="POST" class="wizard-form">
+        <div class="form-header">
+            <h2>🔨 Type de modification</h2>
+            <p class="form-description">Sélectionnez le type de travaux et décrivez brièvement votre projet</p>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group form-group-full">
+                <label for="type_travaux">Type de travaux</label>
+                <select name="type_travaux" id="type_travaux" class="select-large">
+                    {% set types = [
+                    "Modification de l'aspect extérieur",
+                    "Ravalement de façade",
+                    "Construction nouvelle",
+                    "Extension",
+                    "Changement de destination",
+                    "Clôture",
+                    "Piscine",
+                    "Toiture / Couverture",
+                    "Menuiseries extérieures",
+                    "Autre"
+                    ] %}
+                    {% for t in types %}
+                    <option value="{{ t }}" {% if dp.travaux.type_travaux==t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group form-group-full">
+                <label for="description_courte">Description courte des travaux</label>
+                <textarea name="description_courte" id="description_courte" rows="3"
+                    placeholder="Ex: Ravalement de façade avec remplacement des menuiseries et mise en peinture">{{ dp.travaux.description_courte }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="surface_plancher_existante">Surface plancher existante (m²)</label>
+                <input type="number" name="surface_plancher_existante"
+                    value="{{ dp.travaux.surface_plancher_existante }}" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="surface_plancher_creee">Surface créée (m²)</label>
+                <input type="number" name="surface_plancher_creee" value="{{ dp.travaux.surface_plancher_creee }}"
+                    step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="emprise_au_sol_existante">Emprise au sol existante (m²)</label>
+                <input type="number" name="emprise_au_sol_existante" value="{{ dp.travaux.emprise_au_sol_existante }}"
+                    step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="emprise_au_sol_creee">Emprise au sol créée (m²)</label>
+                <input type="number" name="emprise_au_sol_creee" value="{{ dp.travaux.emprise_au_sol_creee }}"
+                    step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="hauteur_existante">Hauteur existante (m)</label>
+                <input type="number" name="hauteur_existante" value="{{ dp.travaux.hauteur_existante }}" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="hauteur_projetee">Hauteur projetée (m)</label>
+                <input type="number" name="hauteur_projetee" value="{{ dp.travaux.hauteur_projetee }}" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="date_debut_prevue">Date de début prévue</label>
+                <input type="text" name="date_debut_prevue" value="{{ dp.travaux.date_debut_prevue }}"
+                    placeholder="JJ/MM/AAAA">
+            </div>
+            <div class="form-group">
+                <label for="duree_travaux_mois">Durée estimée (mois)</label>
+                <input type="number" name="duree_travaux_mois" value="{{ dp.travaux.duree_travaux_mois }}" min="1">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('etape', num=1) }}" class="btn btn-secondary">← Précédent</a>
+            <button type="submit" class="btn btn-primary">Suivant →</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

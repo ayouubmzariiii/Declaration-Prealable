@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<div class="landing">
+    <div class="hero">
+        <div class="hero-badge">🤖 Propulsé par l'IA</div>
+        <h1 class="hero-title">
+            Votre <span class="text-gradient">Déclaration Préalable</span><br>
+            en quelques minutes
+        </h1>
+        <p class="hero-subtitle">
+            Générez un dossier complet conforme aux exigences du Code de l'urbanisme.
+            Notre IA analyse vos photos et rédige les descriptions techniques.
+        </p>
+        <a href="{{ url_for('nouvelle_declaration') }}" class="btn btn-primary btn-lg">
+            Commencer ma déclaration →
+        </a>
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">📷</div>
+            <h3>Analyse photo IA</h3>
+            <p>Uploadez vos photos avant/après, l'IA détecte les matériaux et génère les descriptions.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Notice automatique</h3>
+            <p>La notice descriptive est rédigée automatiquement conformément aux attentes administratives.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📄</div>
+            <h3>PDF professionnel</h3>
+            <p>Export PDF prêt à déposer en mairie, avec toutes les pièces indexées.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

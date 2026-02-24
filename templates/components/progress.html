@@ -1,0 +1,19 @@
+<div class="progress-bar">
+    {% set steps = [
+    ("Identité & Lieu", "👤"),
+    ("Type de travaux", "🔨"),
+    ("Photos", "📷"),
+    ("Analyse IA", "🤖"),
+    ("Export PDF", "📄")
+    ] %}
+    {% for label, icon in steps %}
+    <div class="progress-step {% if loop.index < step %}completed{% elif loop.index == step %}active{% endif %}">
+        <div class="step-circle">
+            {% if loop.index < step %}✓{% else %}{{ loop.index }}{% endif %} </div>
+                <span class="step-label">{{ label }}</span>
+        </div>
+        {% if not loop.last %}
+        <div class="step-connector {% if loop.index < step %}completed{% endif %}"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
