@@ -13,6 +13,7 @@ from flask import (
     Flask, render_template, request, session, redirect,
     url_for, send_file, flash, jsonify, Response, make_response
 )
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,9 +26,11 @@ from ai_service import analyser_photos, generer_notice_descriptive, generer_desc
 from pdf_generator import generer_pdf
 
 app = Flask(__name__)
+# Tell Flask it is behind a proxy (like Vercel) so url_for generates https links
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
-if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):  # We are on Netlify/AWS Lambda
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL"):  # Netlify/Vercel/Lambda
     UPLOAD_FOLDER = "/tmp/uploads"
     OUTPUT_FOLDER = "/tmp/output"
 else:
