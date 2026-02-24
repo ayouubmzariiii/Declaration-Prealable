@@ -10,4 +10,10 @@ from serverless_wsgi import handle_request
 from app import app
 
 def handler(event, context):
+    # Strip the Netlify function prefix from the path so Flask receives the intended route
+    path = event.get('path', '')
+    if path.startswith('/.netlify/functions/api'):
+        new_path = path.replace('/.netlify/functions/api', '', 1)
+        event['path'] = new_path if new_path else '/'
+    
     return handle_request(app, event, context)
