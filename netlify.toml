@@ -1,10 +1,13 @@
 [build]
   publish = "public"
   functions = "netlify/functions"
-  command = "mkdir -p public && cp -r static public/"
+  command = "pip install -r requirements.txt && mkdir -p public && cp -r static public/"
 
 [build.environment]
   PYTHON_VERSION = "3.12"
+
+[functions]
+  included_files = ["*.py", "templates/**", "static/**"]
 
 [[redirects]]
   from = "/*"
