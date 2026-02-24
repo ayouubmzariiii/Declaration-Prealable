@@ -27,8 +27,13 @@ from pdf_generator import generer_pdf
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
-OUTPUT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):  # We are on Netlify/AWS Lambda
+    UPLOAD_FOLDER = "/tmp/uploads"
+    OUTPUT_FOLDER = "/tmp/output"
+else:
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+    OUTPUT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
